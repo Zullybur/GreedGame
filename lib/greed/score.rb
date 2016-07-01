@@ -40,5 +40,4 @@ module Greed
       # Score is points-from-triples + points-from-individuals
       score + triple_score + individual_score
     end
-  end
 end

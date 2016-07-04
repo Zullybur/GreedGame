@@ -1,5 +1,6 @@
 absolute_path = File.expand_path(File.dirname(__FILE__))
 require absolute_path + '/turn'
+require absolute_path + '/player'
 
 module Greed
   class Game
@@ -22,7 +23,7 @@ module Greed
       final_round = false
       while not final_round
         current_player = @players.pop
-        puts "Current player: #{current_player.name}"
+        puts "Current player: #{current_player.name} (current score: #{current_player.score})"
         score = @turn.take_turn
 
         # Add score to player total if the player is 'in the game'
@@ -30,24 +31,27 @@ module Greed
         if current_player.score > 0 || score >= 300
           puts "Your final score for this round was #{score}"
           current_player.score += score
-          puts "Your total score is now #{current_player.score}\n"
+          puts "Your total score is now #{current_player.score}"
         else
-          puts "You did not score high enough to enter the game.\n"
+          puts "You did not score high enough to enter the game."
         end
+        puts # Spacing
 
         # Check if this player has reached 3000, which triggers a final round
-        final_round = true if current_player.score >= 3000
+        if current_player.score >= 3000 then final_round = true end
         # Otherwise, place them at the end of the line
-        @players.unshift(current_player) if not final_round
+        if not final_round then @players.unshift(current_player) end
       end
 
-      puts "#{current_player.name} has triggerd the FINAL ROUND!"
+      puts "*** #{current_player.name} has triggerd the FINAL ROUND! ***"
       final_scores = [current_player]
       
       # Allow each remaining player one final round
-      @players.each do |player|
+      @players.reverse!.each do |player|
+        puts "Current player: #{player.name} (current score: #{player.score})"
         player.score += @turn.take_turn
         final_scores << player
+        puts # Spacing
       end
 
       output_results(final_scores)
@@ -55,14 +59,15 @@ module Greed
 
     # Output final scores in sorted order
     def output_results(scores)
-      scores.sort!
-      (1..scores.size) do |place|
+      scores.sort!.reverse!
+      (1..scores.size).each do |place|
         case place
-        when 1 then puts "1st Place: #{scores[place].name}!"
-        when 2 then puts "2nd Place: #{scores[place].name}"
-        when 3 then puts "3rd Place: #{scores[place].name}"
-        else puts "#{place}th Place: #{scores[place].name}"
+        when 1 then print "1st Place: "
+        when 2 then print "2nd Place: "
+        when 3 then print "3rd Place: "
+        else print "#{place}th Place: "
         end
+        puts "#{scores[place - 1].name} (score: #{scores[place - 1].score})"
       end
     end
     
@@ -77,10 +82,13 @@ module Greed
 
     # Get the name of each player
     def get_player_names
-      players.each do |player|
+      # Get player names in reverse (since queue is front-loaded)
+      @players.reverse.each do |player|
         puts "Enter a name for Player #{player.number} (up to 20 chars)"
         player.name = gets(20).chomp
       end
+      # Spacing newline
+      puts
     end
 
     # Initialize the collection of players
